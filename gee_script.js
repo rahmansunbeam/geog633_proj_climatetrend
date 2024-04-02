@@ -27,6 +27,10 @@ var bufferScale = 10000;
 
 var calculateEmissionStats = function(point) {
 
+  // get the latitude and longitude of the clicked location
+  var pointLat = ee.Number(point.coordinates().get(1)).format('%.4f');
+  var pointLon = ee.Number(point.coordinates().get(0)).format('%.4f');
+  
   var buffer = point.buffer(bufferScale);
   var years = ee.List.sequence(startDate.get('year'), endDate.get('year'));
 
@@ -82,7 +86,7 @@ var calculateEmissionStats = function(point) {
   })
   .setChartType('LineChart')
   .setOptions({
-      title: 'Mean temperature by Year for each Land Cover class',
+      title: 'Mean temperature (K) by Year for each Land Cover class at ' + pointLat + ', ' + pointLon,
       hAxis: {title: 'Year'},
       vAxis: {title: 'Mean Temperature'},
       lineWidth: 1.5,
