@@ -1,10 +1,10 @@
 # Climate Trend Analysis with WorldCover and CMIP6
 
-This repo provides a GEE script for analyzing climate trends using WorldCover and CMIP6 images. The script allows users to interactively select a 10km buffer area on the map, and then generates a trend line for each land cover class within that area using zonal statistics.
+This repo provides a GEE script for analyzing climate trends using WorldCover and CMIP6 images. The script allows users to interactively select a 10km buffer area on the map which generates a trend line of yearly mean temperature for each land cover class within that area using zonal statistics.
 
 ## Description
 
-This GEE script is designed to analyze climate trends by utilizing WorldCover and CMIP6 images. Users can click on the map to generate a 10km buffer area and create a trend line for each land cover class in that area. This script is intended to run with GEE Code Editor. The script is part of the final project for *GEOG633 - Research & Application In Remote Sensing* course, MGIS, Winter 2024 of the University of Calgary.
+This GEE script is designed to analyze climate trends by utilizing WorldCover and CMIP6 images. Users can click on the map to generate a 10km buffer area and create a trend line of yearly mean temperature for each land cover class in that area. This script is intended to run with GEE Code Editor. The script is part of the final project for *GEOG633 - Research & Application In Remote Sensing* course, MGIS, Winter 2024 of the University of Calgary.
 
 ## References
 
