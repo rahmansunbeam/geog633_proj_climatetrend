@@ -86,9 +86,9 @@ var calculateEmissionStats = function(point) {
   })
   .setChartType('LineChart')
   .setOptions({
-      title: 'Mean temperature (K) by Year for each Land Cover class at ' + pointLat + ', ' + pointLon,
+      title: 'Mean yearly temperature (K) per Land Cover class at ' + pointLat + ', ' + pointLon,
       hAxis: {title: 'Year'},
-      vAxis: {title: 'Mean Temperature'},
+      vAxis: {title: 'Mean temp/ year in K'},
       lineWidth: 1.5,
       pointSize: 3
   });
