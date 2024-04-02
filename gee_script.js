@@ -1,7 +1,7 @@
 // This GEE script uses the ESA WorldCover dataset and the NASA GDDP-CMIP6 dataset and produces
 // a timeseries chart of mean temperature for each land cover class for a given point on the map.
-// The script is intended to be used in the Google Earth Engine Code Editor. 
-// This script was created for the final project of GEOG633 - Research & Appl In Remote Sensing 
+// The script is intended to be used in the Google Earth Engine Code Editor.
+// This script was created for the final project of GEOG633 - Research & Appl In Remote Sensing
 // MGIS, Winter 2024, University of Calgary
 
 // Author: Sunbeam Rahman, MGIS Student, University of Calgary
@@ -18,15 +18,15 @@ var image_worldcover = ee.ImageCollection("ESA/WorldCover/v200");
 var image_cmip6 = ee.ImageCollection("NASA/GDDP-CMIP6");
 
 // add necessary specifications
-var startDate = ee.Date('2021-01-01'); 
-var endDate = ee.Date('2023-12-31'); 
+var startDate = ee.Date('2021-01-01');
+var endDate = ee.Date('2023-12-31');
 var landCoverClasses = [30, 40, 50];
 var variable = 'tas';
 var model = 'CanESM5';
 var bufferScale = 10000;
 
 var calculateEmissionStats = function(point) {
-  
+
   var buffer = point.buffer(bufferScale);
   var years = ee.List.sequence(startDate.get('year'), endDate.get('year'));
 
@@ -43,7 +43,7 @@ var calculateEmissionStats = function(point) {
       .clip(buffer);
     return cmip6Year.set('year', year);
   });
-  
+
   // Calculate zonal statistics for each land cover class
   var zonalStats = yearlyMeans.map(function(image) {
     image = ee.Image(image)
@@ -67,12 +67,12 @@ var calculateEmissionStats = function(point) {
         return {'landCoverClass': landCoverClass, 'mean': meanval, 'count': count, 'year': ee.String(ee.Number(image.get('year')).toInt())};
     });
   }).flatten();
-  
+
   // Convert zonalStats to a feature collection
   var zonalStatsFc = ee.FeatureCollection(zonalStats.map(function(dict) {
     return ee.Feature(null, dict);
   }));
-  
+
   // Create a chart
   var chart = ui.Chart.feature.groups({
       features: zonalStatsFc,
@@ -88,14 +88,14 @@ var calculateEmissionStats = function(point) {
       lineWidth: 1.5,
       pointSize: 3
   });
-  
+
   // Print the chart
   print(chart);
 
   // finally add the buffered CMIP6 image to the map
   var lastYear = ee.Number(years.get(-1));
   var lastYearImage = yearlyMeans.get(-1);
-  Map.addLayer(ee.Image(lastYearImage).select(variable), {min: 200, max: 330, 
+  Map.addLayer(ee.Image(lastYearImage).select(variable), {min: 200, max: 330,
     palette: ['blue', 'purple', 'cyan', 'green', 'yellow', 'red']}, 'CMIP6 of ' + lastYear.getInfo());
 }
 
@@ -150,18 +150,18 @@ for (var i = 0; i < palette.length().getInfo(); i++) {
       margin: '0 6px 0 0'
     }
   });
-  
+
   var description = ui.Label({
     value: landCoverLabels.get(i).getInfo(),
     style: {
-      margin: '0', 
-      fontSize: '14px' 
+      margin: '0',
+      fontSize: '14px'
     }
   });
 
   var item = ui.Panel({
     widgets: [colorBox, description],
-    layout: ui.Panel.Layout.Flow('horizontal') 
+    layout: ui.Panel.Layout.Flow('horizontal')
   });
 
   legend.add(item);
