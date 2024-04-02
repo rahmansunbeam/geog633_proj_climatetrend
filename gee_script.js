@@ -1,18 +1,18 @@
 // This GEE script uses the ESA WorldCover dataset and the NASA GDDP-CMIP6 dataset and produces
 // a timeseries chart of mean temperature for each land cover class for a given point on the map.
 // The script is intended to be used in the Google Earth Engine Code Editor. 
-// This script was created for the purpose of the project for GEOG633 of MGIS, Win 2024, University of Calgary
+// This script was created for the final project of GEOG633 - Research & Appl In Remote Sensing 
+// MGIS, Winter 2024, University of Calgary
 
 
-// Author: Sunbeam Rahman
-// Date: 2024-01-27
+// Author: Sunbeam Rahman, MGIS Student, University of Calgary
+// Date: 01 April, 2024
 // email: sunbeam.rahman@ucalgary.ca
 
+// Load the ESA WorldCover dataset (version 200) and the NASA GDDP-CMIP6 dataset
 var image_worldcover = ee.ImageCollection("ESA/WorldCover/v200");
 var image_cmip6 = ee.ImageCollection("NASA/GDDP-CMIP6");
 
-
-// Load the ESA WorldCover dataset (version 200)
 var worldCover = image_worldcover.first();
 
 var calculateEmissionStats = function(point) {

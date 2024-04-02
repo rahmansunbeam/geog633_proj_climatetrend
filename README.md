@@ -4,7 +4,7 @@ This repo provides a GEE script for analyzing climate trends using Worldcover an
 
 ## Description
 
-This GEE script is designed to analyze climate trends by utilizing Worldcover and CMIP6 images. It provides a user-friendly interface for selecting an area on the map and generates trend lines for each land cover class within a 10km buffer area. The script is part of a project for GEOG633, MGIS course of Winter 2024 at the University of Calgary.
+This GEE script is designed to analyze climate trends by utilizing Worldcover and CMIP6 images. It provides a user-friendly interface for selecting an area on the map and generates trend lines for each land cover class within a 10km buffer area. The script is part of the final project for *GEOG633 - Research & Application In Remote Sensing* course, MGIS, Winter 2024 of the University of Calgary.
 
 ## References
 
@@ -14,4 +14,4 @@ This GEE script is designed to analyze climate trends by utilizing Worldcover an
 
 ## License
 
-This project is licensed under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/) license. For more information, please refer to the [LICENSE](LICENSE) file.
+This project is licensed under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/) license. 
