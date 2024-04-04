@@ -18,7 +18,7 @@ var image_worldcover = ee.ImageCollection("ESA/WorldCover/v200");
 var image_cmip6 = ee.ImageCollection("NASA/GDDP-CMIP6");
 
 // add necessary specifications
-var startDate = ee.Date('2021-01-01');
+var startDate = ee.Date('1990-01-01');
 var endDate = ee.Date('2023-12-31');
 var landCoverClasses = [30, 40, 50];
 var variable = 'tas';
@@ -27,10 +27,11 @@ var bufferScale = 10000;
 
 var calculateEmissionStats = function(point) {
 
-  // get the latitude and longitude of the clicked location
+  // get the lat and lon of the clicked location
   var pointLat = ee.Number(point.coordinates().get(1)).format('%.4f');
   var pointLon = ee.Number(point.coordinates().get(0)).format('%.4f');
-  
+
+  // create the buffer area
   var buffer = point.buffer(bufferScale);
   var years = ee.List.sequence(startDate.get('year'), endDate.get('year'));
 
@@ -52,7 +53,20 @@ var calculateEmissionStats = function(point) {
   var zonalStats = yearlyMeans.map(function(image) {
     image = ee.Image(image)
     return landCoverClasses.map(function(landCoverClass) {
+
         var mask = image.select('Map').eq(landCoverClass);
+
+        // add reduceRegion for percentile
+        var percentile = image.updateMask(mask)
+              .select(variable)
+              .reduceRegion({
+                  reducer: ee.Reducer.percentile([95]),
+                  geometry: image.geometry(),
+                  scale: 100,
+                  maxPixels: 1e9
+              }).get(variable);
+
+        // add mean
         var meanval = image.updateMask(mask)
               .select(variable)
               .reduceRegion({
@@ -61,6 +75,8 @@ var calculateEmissionStats = function(point) {
                   scale: 100,
                   maxPixels: 1e9
               }).get(variable);
+
+        // add count
         var count = image.updateMask(mask)
             .reduceRegion({
                 reducer: ee.Reducer.count(),
@@ -68,9 +84,12 @@ var calculateEmissionStats = function(point) {
                 scale: 100,
                 maxPixels: 1e9
             }).get('Map');
-        return {'landCoverClass': landCoverClass, 'mean': meanval, 'count': count, 'year': ee.String(ee.Number(image.get('year')).toInt())};
+
+        return {'landCoverClass': landCoverClass, 'mean': meanval, 'percentile': percentile,'count': count, 'year': ee.Number(image.get('year')).toInt()};
     });
   }).flatten();
+
+  // print(zonalStats)
 
   // Convert zonalStats to a feature collection
   var zonalStatsFc = ee.FeatureCollection(zonalStats.map(function(dict) {
@@ -81,16 +100,18 @@ var calculateEmissionStats = function(point) {
   var chart = ui.Chart.feature.groups({
       features: zonalStatsFc,
       xProperty: 'year',
-      yProperty: 'mean',
+      yProperty: 'mean', //percentile, mean
       seriesProperty: 'landCoverClass'
   })
   .setChartType('LineChart')
   .setOptions({
-      title: 'Mean yearly temperature (K) per Land Cover class at ' + pointLat + ', ' + pointLon,
-      hAxis: {title: 'Year'},
+      title: 'Mean yearly temperature (K) per Land Cover class at ' + pointLat.getInfo() + ', ' + pointLon.getInfo(),
+      hAxis: {title: 'Year', format: '####'},
       vAxis: {title: 'Mean temp/ year in K'},
       lineWidth: 1.5,
-      pointSize: 3
+      pointSize: 3,
+      curveType: 'function',
+      // trendlines: {0: {type: 'linear', color: 'grey', lineWidth: 1}}
   });
 
   // Print the chart
