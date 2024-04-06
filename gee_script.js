@@ -25,6 +25,10 @@ var variable = 'tas';
 var model = 'CanESM5';
 var bufferScale = 10000;
 
+// Adding palette for CMIP6
+var genaPalette = require('users/gena/packages:palettes').misc.jet[7];
+var cmip6VizParam = {min: 224, max: 321, palette: genaPalette}
+
 var calculateEmissionStats = function(point) {
 
   // get the lat and lon of the clicked location
@@ -107,21 +111,19 @@ var calculateEmissionStats = function(point) {
   .setOptions({
       title: 'Mean yearly temperature (K) per Land Cover class at ' + pointLat.getInfo() + ', ' + pointLon.getInfo(),
       hAxis: {title: 'Year', format: '####'},
-      vAxis: {title: 'Mean temp/ year in K'},
-      lineWidth: 1.5,
-      pointSize: 3,
+      vAxis: {title: 'Mean temp/ year in K', format: '###'},
+      lineWidth: 2,
+      pointSize: 0,
       curveType: 'function',
-      // trendlines: {0: {type: 'linear', color: 'grey', lineWidth: 1}}
+      trendlines: {0: {type: 'linear', color: 'black', lineWidth: 2}}
   });
 
   // Print the chart
   print(chart);
 
   // finally add the buffered CMIP6 image to the map
-  var lastYear = ee.Number(years.get(-1));
   var lastYearImage = yearlyMeans.get(-1);
-  Map.addLayer(ee.Image(lastYearImage).select(variable), {min: 200, max: 330,
-    palette: ['blue', 'purple', 'cyan', 'green', 'yellow', 'red']}, 'CMIP6 of ' + lastYear.getInfo());
+  Map.addLayer(ee.Image(lastYearImage).select(variable), cmip6VizParam, 'CMIP6 of ' + pointLat.getInfo() + ', ' + pointLon.getInfo());
 }
 
 // Event handler for mouse click
@@ -129,6 +131,15 @@ Map.onClick(function(event) {
   var clickedPoint = ee.Geometry.Point(event.lon, event.lat);
   calculateEmissionStats(clickedPoint);
 });
+
+
+// Add the CMIP6 dataset with the custom palette and labels to the map
+Map.addLayer(image_cmip6
+      .filterDate(ee.Date.fromYMD(endDate.get('year'), 1, 1), ee.Date.fromYMD(endDate.get('year'), 12, 31))
+      .filter(ee.Filter.eq('model', model))
+      .select([variable])
+      .mean(), 
+      cmip6VizParam, 'CMIP6 TAS Mean of ' + endDate.get('year').getInfo());
 
 // Adding palette for WorldCover
 var palette = ee.List(image_worldcover.first().get('Map_class_palette'))
@@ -155,7 +166,7 @@ var legendTitle = ui.Label({
   value: 'Land cover classes',
   style: {
     fontWeight: 'bold',
-    fontSize: '18px',
+    fontSize: '16px',
     margin: '0 0 4px 0',
     padding: '0'
   }
@@ -192,5 +203,55 @@ for (var i = 0; i < palette.length().getInfo(); i++) {
   legend.add(item);
 }
 
-// Add legend to map
+// Create legend title for CMIP6
+var cmip6LegendTitle = ui.Label({
+  value: 'Temperature (K)',
+  style: {
+    fontWeight: 'bold',
+    fontSize: '16px',
+    margin: '8px 0 4px 0',
+    padding: '0'
+  }
+});
+
+// Add the title to the CMIP6 legend panel
+legend.add(cmip6LegendTitle);
+
+var nSteps = 10
+// Creates a color bar thumbnail image of color palette
+function makeColorBarParams(genaPalette) {
+  return {
+    bbox: [0, 0, nSteps, 0.1],
+    dimensions: '100x10',
+    format: 'png',
+    min: 0,
+    max: nSteps,
+    palette: genaPalette,
+  };
+}
+
+// Create the colour bar for the legend
+var colorBar = ui.Thumbnail({
+  image: ee.Image.pixelLonLat().select(0).int(),
+  params: makeColorBarParams(cmip6VizParam.palette),
+  style: {stretch: 'horizontal', margin: '0px 8px', maxHeight: '24px'},
+});
+
+legend.add(colorBar);
+
+// Create a panel with three numbers for the legend
+var legendLabels = ui.Panel({
+  widgets: [
+    ui.Label(cmip6VizParam.min, {margin: '4px 8px'}),
+    ui.Label(
+        ((cmip6VizParam.max-cmip6VizParam.min) / 2+cmip6VizParam.min),
+        {margin: '4px 8px', textAlign: 'center', stretch: 'horizontal'}),
+    ui.Label(cmip6VizParam.max, {margin: '4px 8px'})
+  ],
+  layout: ui.Panel.Layout.flow('horizontal')
+});
+
+legend.add(legendLabels);
+
+// Add CMIP6 legend to map
 Map.add(legend);
