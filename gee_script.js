@@ -25,10 +25,6 @@ var variable = 'tas';
 var model = 'CanESM5';
 var bufferScale = 10000;
 
-// Adding palette for CMIP6
-var genaPalette = require('users/gena/packages:palettes').misc.jet[7];
-var cmip6VizParam = {min: 224, max: 321, palette: genaPalette}
-
 var calculateEmissionStats = function(point) {
 
   // get the lat and lon of the clicked location
@@ -131,15 +127,6 @@ Map.onClick(function(event) {
   var clickedPoint = ee.Geometry.Point(event.lon, event.lat);
   calculateEmissionStats(clickedPoint);
 });
-
-
-// Add the CMIP6 dataset with the custom palette and labels to the map
-Map.addLayer(image_cmip6
-      .filterDate(ee.Date.fromYMD(endDate.get('year'), 1, 1), ee.Date.fromYMD(endDate.get('year'), 12, 31))
-      .filter(ee.Filter.eq('model', model))
-      .select([variable])
-      .mean(), 
-      cmip6VizParam, 'CMIP6 TAS Mean of ' + endDate.get('year').getInfo());
 
 // Adding palette for WorldCover
 var palette = ee.List(image_worldcover.first().get('Map_class_palette'))
