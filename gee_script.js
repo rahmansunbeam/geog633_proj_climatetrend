@@ -132,13 +132,12 @@ Map.onClick(function(event) {
   calculateEmissionStats(clickedPoint);
 });
 
-
 // Add the CMIP6 dataset with the custom palette and labels to the map, but turn off for faster loading
 Map.addLayer(image_cmip6
       .filterDate(ee.Date.fromYMD(endDate.get('year'), 1, 1), ee.Date.fromYMD(endDate.get('year'), 12, 31))
       .filter(ee.Filter.eq('model', model))
       .select([variable])
-      .mean(), 
+      .mean(),
       cmip6VizParam, 'CMIP6 TAS Mean of ' + endDate.get('year').getInfo(), false);
 
 // Adding palette for WorldCover
@@ -157,7 +156,7 @@ var legend = ui.Panel({
   style: {
     position: 'bottom-left',
     padding: '8px 15px',
-    maxWidth: '300px' // Adjust the maximum width as needed
+    maxWidth: '300px'
   }
 });
 
@@ -175,20 +174,19 @@ var legendTitle = ui.Label({
 // Add the title to the panel
 legend.add(legendTitle);
 
-// WorldCover land cover dictionary
-var landCoverDict = {
-  'Bare / sparse vegetation': 'b4b4b4',
-  'Built-up': 'fa0000',
-  'Cropland': 'f096ff',
-  'Grassland': 'ffff4c',
-  'Herbaceous wetland': '0096a0',
-  'Mangroves': '00cf75',
-  'Moss and lichen': 'fae6a0',
-  'Permanent water bodies': '0064c8',
-  'Shrubland': 'ffbb22',
-  'Snow and ice': 'f0f0f0',
-  'Tree cover': '006400'
-};
+// Initialize an empty dictionary to store land cover names and palettes
+var landCoverDict = {};
+var landCoverNames = ee.List(image_worldcover.first().get('Map_class_names'));
+var landCoverPalette = ee.List(image_worldcover.first().get('Map_class_palette'));
+
+if (landCoverNames && landCoverPalette) {
+  landCoverNames = landCoverNames.getInfo();
+  landCoverPalette = landCoverPalette.getInfo();
+
+  for (var i = 0; i < landCoverNames.length; i++) {
+    landCoverDict[landCoverNames[i]] = landCoverPalette[i];
+  }
+}
 
 // Create the legend panel
 var legend = ui.Panel({
