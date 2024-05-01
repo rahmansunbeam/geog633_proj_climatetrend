@@ -133,13 +133,13 @@ Map.onClick(function(event) {
 });
 
 
-// Add the CMIP6 dataset with the custom palette and labels to the map
+// Add the CMIP6 dataset with the custom palette and labels to the map, but turn off for faster loading
 Map.addLayer(image_cmip6
       .filterDate(ee.Date.fromYMD(endDate.get('year'), 1, 1), ee.Date.fromYMD(endDate.get('year'), 12, 31))
       .filter(ee.Filter.eq('model', model))
       .select([variable])
       .mean(), 
-      cmip6VizParam, 'CMIP6 TAS Mean of ' + endDate.get('year').getInfo());
+      cmip6VizParam, 'CMIP6 TAS Mean of ' + endDate.get('year').getInfo(), false);
 
 // Adding palette for WorldCover
 var palette = ee.List(image_worldcover.first().get('Map_class_palette'))
@@ -175,20 +175,56 @@ var legendTitle = ui.Label({
 // Add the title to the panel
 legend.add(legendTitle);
 
-// Add a legend of the land cover classes
-var landCoverLabels = ee.List(image_worldcover.first().get('Map_class_names'))
+// WorldCover land cover dictionary
+var landCoverDict = {
+  'Bare / sparse vegetation': 'b4b4b4',
+  'Built-up': 'fa0000',
+  'Cropland': 'f096ff',
+  'Grassland': 'ffff4c',
+  'Herbaceous wetland': '0096a0',
+  'Mangroves': '00cf75',
+  'Moss and lichen': 'fae6a0',
+  'Permanent water bodies': '0064c8',
+  'Shrubland': 'ffbb22',
+  'Snow and ice': 'f0f0f0',
+  'Tree cover': '006400'
+};
 
-for (var i = 0; i < palette.length().getInfo(); i++) {
+// Create the legend panel
+var legend = ui.Panel({
+  style: {
+    position: 'bottom-left',
+    padding: '8px 15px',
+    maxWidth: '300px'
+  }
+});
+
+// Create legend title for WorldCover
+var landCoverLegendTitle = ui.Label({
+  value: 'Land cover classes',
+  style: {
+    fontWeight: 'bold',
+    fontSize: '18px',
+    margin: '0 0 4px 0',
+    padding: '0'
+  }
+});
+
+// Add the title to the land cover panel
+legend.add(landCoverLegendTitle);
+
+// Add a legend of the land cover classes
+for (var landCover in landCoverDict) {
   var colorBox = ui.Label({
     style: {
-      backgroundColor: '#' + palette.get(i).getInfo(),
+      backgroundColor: '#' + landCoverDict[landCover],
       padding: '8px',
       margin: '0 6px 0 0'
     }
   });
 
   var description = ui.Label({
-    value: landCoverLabels.get(i).getInfo(),
+    value: landCover,
     style: {
       margin: '0',
       fontSize: '14px'
@@ -253,5 +289,5 @@ var legendLabels = ui.Panel({
 
 legend.add(legendLabels);
 
-// Add CMIP6 legend to map
+// Add legend to map
 Map.add(legend);
