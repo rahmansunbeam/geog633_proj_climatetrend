@@ -137,7 +137,7 @@ Map.addLayer(image_cmip6
       .filterDate(ee.Date.fromYMD(endDate.get('year'), 1, 1), ee.Date.fromYMD(endDate.get('year'), 12, 31))
       .filter(ee.Filter.eq('model', model))
       .select([variable])
-      .mean(),
+      .mean(), 
       cmip6VizParam, 'CMIP6 TAS Mean of ' + endDate.get('year').getInfo(), false);
 
 // Adding palette for WorldCover
@@ -174,17 +174,25 @@ var legendTitle = ui.Label({
 // Add the title to the panel
 legend.add(legendTitle);
 
-// Initialize an empty dictionary to store land cover names and palettes
-var landCoverDict = {};
-var landCoverNames = ee.List(image_worldcover.first().get('Map_class_names'));
-var landCoverPalette = ee.List(image_worldcover.first().get('Map_class_palette'));
+// Retrieve all required properties in one call
+var landCoverInfo = image_worldcover.first().toDictionary(['Map_class_names', 'Map_class_palette', 'Map_class_values']);
 
-if (landCoverNames && landCoverPalette) {
+// Extract land cover names, palettes, and codes from the landCoverInfo
+var landCoverNames = ee.List(landCoverInfo.get('Map_class_names'));
+var landCoverPalette = ee.List(landCoverInfo.get('Map_class_palette'));
+var landCoverCodes = ee.List(landCoverInfo.get('Map_class_values'));
+
+// Initialize an empty dictionary
+var landCoverDict = {};
+
+// Check if land cover names and palettes are available
+if (landCoverNames && landCoverPalette && landCoverCodes) {
   landCoverNames = landCoverNames.getInfo();
   landCoverPalette = landCoverPalette.getInfo();
+  landCoverCodes = landCoverCodes.getInfo();
 
   for (var i = 0; i < landCoverNames.length; i++) {
-    landCoverDict[landCoverNames[i]] = landCoverPalette[i];
+    landCoverDict[landCoverNames[i]] = [landCoverCodes[i], landCoverPalette[i]];
   }
 }
 
@@ -199,7 +207,7 @@ var legend = ui.Panel({
 
 // Create legend title for WorldCover
 var landCoverLegendTitle = ui.Label({
-  value: 'Land cover classes',
+  value: 'LC classes and codes',
   style: {
     fontWeight: 'bold',
     fontSize: '18px',
@@ -215,14 +223,14 @@ legend.add(landCoverLegendTitle);
 for (var landCover in landCoverDict) {
   var colorBox = ui.Label({
     style: {
-      backgroundColor: '#' + landCoverDict[landCover],
+      backgroundColor: '#' + ee.List(landCoverDict[landCover]).get(1).getInfo(),
       padding: '8px',
       margin: '0 6px 0 0'
     }
   });
 
   var description = ui.Label({
-    value: landCover,
+    value: landCover + ' (' + ee.List(landCoverDict[landCover]).get(0).getInfo() + ')',
     style: {
       margin: '0',
       fontSize: '14px'
